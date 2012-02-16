@@ -209,7 +209,7 @@ public class AuctionHouse implements Notifiable{
 		    	    	}
 		    	    	Thread.sleep(1000);
 		    	    }	
-		    		//Thread.sleep(86400000);	// sleeps for 24 hours
+		    		Thread.sleep(6000);
 		    	} catch (java.lang.InterruptedException ex) {
 		    		System.out.println("AuctionHouse interrupted"); 
 		    	}
