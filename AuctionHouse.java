@@ -33,7 +33,7 @@ public class AuctionHouse implements Notifiable{
 	public void notify(Notification e) {
         System.out.println(myID + " just got this event:");
         System.out.println(e.toString() + "\n");
-        if(e.getAttribute("SI_Event").equals("Sale_confirmation")){
+        if(e.getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
         	confirmSale(e);
         }
     };
@@ -42,7 +42,7 @@ public class AuctionHouse implements Notifiable{
     	System.out.println(myID + " just got a bunch of events:");
     	for (int i=0; i<s.length; i++){
     		System.out.println(s[i].toString() + "\n");
-    		if(s[i].getAttribute("SI_Event").equals("Sale_confirmation")){
+    		if(s[i].getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
     			confirmSale(s[i]);
     		}
         }
@@ -136,7 +136,9 @@ public class AuctionHouse implements Notifiable{
 	}
 	
 	public static void confirmSale(Notification e){
-		balance = e.getAttribute("balance").intValue();
+		if(e.getAttribute("balance") != null)
+			balance = e.getAttribute("balance").intValue();
+		System.out.println("Balance Deducted: balance is now " + balance);
 	}
 	
     public static void main(String args[]) {		
@@ -159,8 +161,8 @@ public class AuctionHouse implements Notifiable{
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
 		    try {
 		    	siena.subscribe(f, party);
-		    	try {
-		    		for (int i=0; i<10; i++) {
+		    	try { //TESTING CODE: the for loop below is for testing calls to supplier.  Should receive a confirmation back
+		    		for (int i=0; i<2; i++) {
 		    		    Notification e = new Notification();
 		    		    e.putAttribute("AH_Event", "Restock");
 		    	    	e.putAttribute("item", "CHAIR");
@@ -173,7 +175,7 @@ public class AuctionHouse implements Notifiable{
 		    	    	} catch (SienaException ex) {
 		    				System.err.println("Siena error:" + ex.toString());
 		    	    	}
-		    	    	Thread.sleep(1000);
+		    	    	Thread.sleep(8000);
 		    	    }	
 		    		Thread.sleep(86400000);	// sleeps for 24 hours
 		    	} catch (java.lang.InterruptedException ex) {

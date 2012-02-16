@@ -49,7 +49,7 @@ public class Supplier implements Notifiable{
 	public void notify(Notification e) {
         System.out.println(myID + " just got this event:");
         System.out.println(e.toString() + "\n");
-        if(e.getAttribute("AH_Event").equals("Restock")){
+        if(e.getAttribute("AH_Event").stringValue().equals("Restock")){
         	restock(e);
         }
     };
@@ -58,7 +58,7 @@ public class Supplier implements Notifiable{
     	System.out.println(myID + " just got a bunch of events:");
     	for (int i=0; i<s.length; i++){
     		System.out.println(s[i].toString() + "\n");
-    		if(s[i].getAttribute("AH_Event").equals("Restock")){
+    		if(s[i].getAttribute("AH_Event").stringValue().equals("Restock")){
     			restock(s[i]);
     		}
         }
