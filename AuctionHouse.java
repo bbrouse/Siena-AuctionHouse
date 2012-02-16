@@ -1,18 +1,17 @@
 
 import siena.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 	
 public class AuctionHouse{	
-	private static int balance = 10000; //balance of the auction house (affected y selling items and buying from supplier)
-
+	private static int balance = 10000; //balance of the auction house (affected y selling items and buying from supplier
 	private static ArrayList<AuctionItem> inventory = new ArrayList<AuctionItem>(); //keeps track of all available items in the auction house
-    
 	static AuctionHouse obj = new AuctionHouse();
-	
 	static Scanner in = new Scanner(System.in);
+	private static ThinClient siena;
 	
 	public AuctionHouse() {
 		
@@ -92,52 +91,60 @@ public class AuctionHouse{
 	
 	public static void stock(){
 		AuctionItem currentItem = null;
-		try{
-				Registry registry = LocateRegistry.getRegistry(9988);
-				SI stub = (SI) registry.lookup("SI"); 
-				
-				System.out.println("Which item would you like to restock?");
-				String item = in.nextLine();
-				int oldBalance = balance;
-				for(int i=0; i < inventory.size(); i++){
-					if(item.equalsIgnoreCase(inventory.get(i).name)){
-						currentItem = inventory.get(i);
-						System.out.println("How many of " + item + " would you like to buy?");
-						Integer num = Integer.parseInt(in.nextLine());
-						balance = stub.restock(inventory.get(i).name, num, inventory.get(i).stockPrice, balance);
-						if(oldBalance > balance)
-							inventory.get(i).numAvailable += num;
-						return;
-					}
-				} 
-				System.out.println("The auction house does not have a " + item + ".");
+		
+		for(int i=0; i < inventory.size(); i++){
+			if(inventory.get(i).numAvailable == 0)){
+				currentItem = inventory.get(i);
+				Notification e = new Notification();
+			    e.putAttribute("AH_Event", "Restock");
+		    	e.putAttribute("item", currentItem.name);
+		    	e.putAttribute("number", 1);
+				e.putAttribute("price", currentItem.stockPrice);
+				e.putAttribute("balance", balance);
 			}
-			catch (Exception e) {
-				System.err.println("Customer exception: " + e.toString());
-				e.printStackTrace();
-			}
+		} 
+		
 	}
 	
     public static void main(String args[]) {		
-		if(args.length > 0){
-			if(args[0].equalsIgnoreCase("Restock"))
-				stock();
-			
-			return;
+    	if(args.length != 1) {
+		    System.err.println("Usage: Supplier <server-address>");
+		    System.exit(1);
 		}
 		
 		try {
-			AH stub = (AH) UnicastRemoteObject.exportObject(obj, 0);
+			// accepts one argument with a String in the form <protocol>:<ipaddress>:<port>
+			siena = new ThinClient(args[0]);
 
-			// Bind the remote object's stub in the registry
-			Registry registry = LocateRegistry.getRegistry(9988);
-			registry.bind("AH", stub);
-
-			System.err.println("AuctionHouse ready to operate");
-		} catch (Exception e) {
-			System.err.println("AuctionHouse exception: " + e.toString());
-			e.printStackTrace();
-		}
-    }
+		    Filter f = new Filter();
+		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation"); 
+		    //------ADD ALL CUSTOMER INCOMING EVENTS HERE----
+		    InterestedParty party = new InterestedParty();
+		    
+		    System.out.println("AuctionHouse Subscribing: " + f.toString());
+		    try {
+		    	siena.subscribe(f, party);
+		    	try {
+		    		Thread.sleep(86400000);	// sleeps for 24 hours
+		    	} catch (java.lang.InterruptedException ex) {
+		    		System.out.println("AuctionHouse interrupted"); 
+		    	}
+		    	
+		    	System.out.println("AuctionHouse unsubscribing");
+		    	siena.unsubscribe(f, party);
+		    	
+		    } catch (SienaException ex) {
+		    		System.err.println("Siena error in AuctionHouse:" + ex.toString());
+		    }
+		    	
+		    	System.out.println("AuctionHouse shutting down.");
+		    	siena.shutdown();
+		    	System.exit(0);
+		    	
+		} catch (Exception ex) {
+				ex.printStackTrace();
+				System.exit(1);
+		} 
+	    };
 }
 

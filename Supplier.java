@@ -39,6 +39,8 @@ public class Supplier implements Notifiable{
     	} catch (SienaException ex) {
 			System.err.println("Siena error:" + ex.toString());
     	}
+	    
+	    Thread.sleep(1000);
 	}
 	
 	
