@@ -49,6 +49,7 @@ public class Customer implements Notifiable {
 			e.putAttribute("Bid", bid);
 			e.putAttribute("CU_Event", "Bid");
 			e.putAttribute("Item", "Sword");
+			e.putAttribute("destination", "AH");
 			System.out.println("publishing " + e.toString());
 			try {
 				mySiena.publish(e);

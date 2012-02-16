@@ -160,6 +160,7 @@ public class AuctionHouse implements Notifiable{
 			e.putAttribute("Item", "Sword");
 			e.putAttribute("price", 500);
 			e.putAttribute("description", "It's a sword.");
+			e.putAttribute("destination", "CU");
 			System.out.println("publishing " + e.toString());
 			try {
 				siena.publish(e);
@@ -187,15 +188,12 @@ public class AuctionHouse implements Notifiable{
 
 		    Filter f = new Filter();
 			Filter g = new Filter();
-		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation");
-		    g.addConstraint("CU_Event", Op.EQ, "Bid");
+		    f.addConstraint("destination", Op.EQ, "AH");
 		    AuctionHouse party = new AuctionHouse();
-			AuctionHouse party2 = new AuctionHouse();
 		    
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
 		    try {
 		    	siena.subscribe(f, party);
-				siena.subscribe(g, party2);
 		    	try {
 		    		for (int i=0; i<1; i++) {
 		    		    Notification e = new Notification();
@@ -204,6 +202,7 @@ public class AuctionHouse implements Notifiable{
 		    	    	e.putAttribute("number", 2);
 		    			e.putAttribute("price", 150);
 		    			e.putAttribute("balance", 1000);
+		    			e.putAttribute("destination", "SI");
 		    		    System.out.println("publishing " + e.toString());
 		    		    try {
 		    				siena.publish(e);
@@ -220,7 +219,6 @@ public class AuctionHouse implements Notifiable{
 		    	
 		    	System.out.println("AuctionHouse unsubscribing");
 		    	siena.unsubscribe(f, party);
-				siena.unsubscribe(g, party2);
 		    	
 		    } catch (SienaException ex) {
 		    		System.err.println("Siena error in AuctionHouse:" + ex.toString());

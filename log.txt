@@ -1,0 +1,54 @@
+
+----LOG OF TERMINAL RUNNING CUSTOMER-----
+
+bjb85@tux64-14:~/se311_winter_2012/lab3$ java -cp ./classes:siena-2.0.1.jar AuctionHouse tcp:localhost:2345 &
+[4] 23641
+bjb85@tux64-14:~/se311_winter_2012/lab3$ AuctionHouse Subscribing: { destination ="AH"}
+publishing { AH_Event="Restock" balance=1000 destination="SI" item="CHAIR" number=2 price=150}
+AuctionHouse just got this event:
+{ SI_Event="Sale_confirmation" destination="AH" item="CHAIR" new_balance=700 number=2 ttl=29}
+
+publishing { AH_Event="new_auction" Item="Sword" description="It's a sword." destination="CU" price=500}
+AuctionHouse just got this event:
+{ Bid=750 CU_Event="Bid" Item="Sword" destination="AH" timestamp="1329393107852" ttl=29}
+
+AuctionHouse just got this event:
+{ Bid=750 CU_Event="Bid" Item="Sword" destination="AH" timestamp="1329393107852" ttl=29}
+
+bjb85@tux64-14:~/se311_winter_2012/lab3$ 
+
+
+
+----LOG OF TERMINAL RUNNING CUSTOMER-----
+
+bjb85@tux64-14:~/se311_winter_2012/lab3$ 
+bjb85@tux64-14:~/se311_winter_2012/lab3$ java -cp ./classes:siena-2.0.1.jar Customer tcp:localhost:2345 &
+[1] 23521
+bjb85@tux64-14:~/se311_winter_2012/lab3$ subscribing for { price <5000 AH_Event ="new_auction"}
+Customer just got this event:
+{ AH_Event="new_auction" Item="Sword" description="It's a sword." destination="CU" price=500 ttl=29}
+publishing { Bid=750 CU_Event="Bid" Item="Sword" destination="AH" timestamp="1329393021440"}
+Customer just got this event:
+{ AH_Event="new_auction" Item="Sword" description="It's a sword." destination="CU" price=500 ttl=29}
+publishing { Bid=750 CU_Event="Bid" Item="Sword" destination="AH" timestamp="1329393107852"}
+
+
+
+
+
+----LOG OF TERMINAL RUNNING SUPPLIER-----
+
+bjb85@tux64-14:~/se311_winter_2012/lab3$ 
+bjb85@tux64-14:~/se311_winter_2012/lab3$ java -cp ./classes:siena-2.0.1.jar Supplier tcp:localhost:2345 &
+[9] 23483
+bjb85@tux64-14:~/se311_winter_2012/lab3$ Supplier Subscribing: { AH_Event ="Restock"}
+Supplier just got this event:
+{ AH_Event="Restock" balance=1000 destination="SI" item="CHAIR" number=2 price=150 ttl=29}
+
+Successfully restocked CHAIR.
+publishing supplier sale{ SI_Event="Sale_confirmation" destination="AH" item="CHAIR" new_balance=700 number=2}
+Supplier just got this event:
+{ AH_Event="Restock" balance=1000 destination="SI" item="CHAIR" number=2 price=150 ttl=29}
+
+Successfully restocked CHAIR.
+publishing supplier sale{ SI_Event="Sale_confirmation" destination="AH" item="CHAIR" new_balance=700 number=2}
