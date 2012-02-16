@@ -10,14 +10,18 @@ import java.util.Random;
 public class Supplier implements Notifiable{
 	
 	private String myID = "Supplier";
-	private ThinClient siena;
+	private static String address;
 	
 	public void restock(Notification e)
 	{ 
-		String item = e.getAttribute("item");
-		int num = e.getAttribute("number");
-		int price = e.getAttribute("price");
-		int balance = e.getAttribute("balance");
+		ThinClient siena;
+		try{
+		// accepts one argument with a String in the form <protocol>:<ipaddress>:<port>
+		siena = new ThinClient(address);
+		String item = e.getAttribute("item").stringValue();
+		int num = e.getAttribute("number").intValue();
+		int price = e.getAttribute("price").intValue();
+		int balance = e.getAttribute("balance").intValue();
 		
 		if((num * price)>balance){
 			System.out.println("You do not have enough money to buy " + num + " " + item + "s.");
@@ -34,13 +38,11 @@ public class Supplier implements Notifiable{
 		out.putAttribute("number", item);
 		out.putAttribute("new_balance", balance);
 	    System.out.println("publishing supplier sale" + out.toString());
-	    try {
-			siena.publish(out);
+		siena.publish(out);
     	} catch (SienaException ex) {
 			System.err.println("Siena error:" + ex.toString());
     	}
 	    
-	    Thread.sleep(1000);
 	}
 	
 	
@@ -56,8 +58,8 @@ public class Supplier implements Notifiable{
     	System.out.println(myID + " just got a bunch of events:");
     	for (int i=0; i<s.length; i++){
     		System.out.println(s[i].toString() + "\n");
-    		if(e.getAttribute("AH_Event").equals("Restock")){
-    			restock(e);
+    		if(s[i].getAttribute("AH_Event").equals("Restock")){
+    			restock(s[i]);
     		}
         }
     }
@@ -70,13 +72,14 @@ public class Supplier implements Notifiable{
 		
 		ThinClient mySiena;
 		try {
+			ThinClient siena;
 			// accepts one argument with a String in the form <protocol>:<ipaddress>:<port>
-			siena = new ThinClient(args[0]);
+			address = args[0];
+			siena = new ThinClient(address);
 
 		    Filter f = new Filter();
 		    f.addConstraint("AH_Event", Op.EQ, "Restock"); 
-		    f.addConstraint("AH_Event", Op.EQ, "SI_payment");
-		    InterestedParty party = new InterestedParty();
+		    Supplier party = new Supplier();
 		    
 		    System.out.println("Supplier Subscribing: " + f.toString());
 		    try {

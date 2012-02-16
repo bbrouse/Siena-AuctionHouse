@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 	
-public class AuctionHouse{	
+public class AuctionHouse implements Notifiable{	
 	private static int balance = 10000; //balance of the auction house (affected y selling items and buying from supplier
 	private static ArrayList<AuctionItem> inventory = new ArrayList<AuctionItem>(); //keeps track of all available items in the auction house
 	static AuctionHouse obj = new AuctionHouse();
 	static Scanner in = new Scanner(System.in);
-	private static ThinClient siena;
+	private String myID = "AuctionHouse";
+	private static String address;
 	
 	public AuctionHouse() {
 		
@@ -28,6 +29,24 @@ public class AuctionHouse{
 		inventory.add(pants);
 		
 	}
+	
+	public void notify(Notification e) {
+        System.out.println(myID + " just got this event:");
+        System.out.println(e.toString() + "\n");
+        if(e.getAttribute("SI_Event").equals("Sale_confirmation")){
+        	confirmSale(e);
+        }
+    };
+
+    public void notify(Notification [] s) { 
+    	System.out.println(myID + " just got a bunch of events:");
+    	for (int i=0; i<s.length; i++){
+    		System.out.println(s[i].toString() + "\n");
+    		if(s[i].getAttribute("SI_Event").equals("Sale_confirmation")){
+    			confirmSale(s[i]);
+    		}
+        }
+    }
 	
     public String getItemListing() {
 		String response = "Items Available: \n";
@@ -91,9 +110,11 @@ public class AuctionHouse{
 	
 	public static void stock(){
 		AuctionItem currentItem = null;
-		
+		try{
+		ThinClient siena;
+		siena = new ThinClient(address);
 		for(int i=0; i < inventory.size(); i++){
-			if(inventory.get(i).numAvailable == 0)){
+			if(inventory.get(i).numAvailable == 0){
 				currentItem = inventory.get(i);
 				Notification e = new Notification();
 			    e.putAttribute("AH_Event", "Restock");
@@ -101,9 +122,21 @@ public class AuctionHouse{
 		    	e.putAttribute("number", 1);
 				e.putAttribute("price", currentItem.stockPrice);
 				e.putAttribute("balance", balance);
+				
+				try {
+					siena.publish(e);
+		    	} catch (SienaException ex) {
+					System.err.println("Siena error:" + ex.toString());
+		    	}
 			}
 		} 
-		
+		} catch (SienaException ex) {
+    		System.err.println("Siena error in AuctionHouse:" + ex.toString());
+    }
+	}
+	
+	public static void confirmSale(Notification e){
+		balance = e.getAttribute("balance").intValue();
 	}
 	
     public static void main(String args[]) {		
@@ -113,18 +146,35 @@ public class AuctionHouse{
 		}
 		
 		try {
+			ThinClient siena;
 			// accepts one argument with a String in the form <protocol>:<ipaddress>:<port>
-			siena = new ThinClient(args[0]);
+			address = args[0];
+			siena = new ThinClient(address);
 
 		    Filter f = new Filter();
 		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation"); 
 		    //------ADD ALL CUSTOMER INCOMING EVENTS HERE----
-		    InterestedParty party = new InterestedParty();
+		    AuctionHouse party = new AuctionHouse();
 		    
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
 		    try {
 		    	siena.subscribe(f, party);
 		    	try {
+		    		for (int i=0; i<10; i++) {
+		    		    Notification e = new Notification();
+		    		    e.putAttribute("AH_Event", "Restock");
+		    	    	e.putAttribute("item", "CHAIR");
+		    	    	e.putAttribute("number", 2);
+		    			e.putAttribute("price", 150);
+		    			e.putAttribute("balance", 1000);
+		    		    System.out.println("publishing " + e.toString());
+		    		    try {
+		    				siena.publish(e);
+		    	    	} catch (SienaException ex) {
+		    				System.err.println("Siena error:" + ex.toString());
+		    	    	}
+		    	    	Thread.sleep(1000);
+		    	    }	
 		    		Thread.sleep(86400000);	// sleeps for 24 hours
 		    	} catch (java.lang.InterruptedException ex) {
 		    		System.out.println("AuctionHouse interrupted"); 
