@@ -33,8 +33,13 @@ public class AuctionHouse implements Notifiable{
 	public void notify(Notification e) {
         System.out.println(myID + " just got this event:");
         System.out.println(e.toString() + "\n");
-        if(e.getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
-        	confirmSale(e);
+        if(e.getAttribute("SI_Event") != null){
+        	if(e.getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
+            	confirmSale(e);
+            }
+        }
+        else if(e.getAttribute("CU_Event") != null)
+        	//add incoming customer events here
         }
     };
 
@@ -42,9 +47,14 @@ public class AuctionHouse implements Notifiable{
     	System.out.println(myID + " just got a bunch of events:");
     	for (int i=0; i<s.length; i++){
     		System.out.println(s[i].toString() + "\n");
-    		if(s[i].getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
-    			confirmSale(s[i]);
-    		}
+    		if(s[i].getAttribute("SI_Event") != null){
+            	if(s[i].getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
+                	confirmSale(s[i]);
+                }
+            }
+            else if(s[i].getAttribute("CU_Event") != null)
+            	//add incoming customer events here
+            }
         }
     }
 	
