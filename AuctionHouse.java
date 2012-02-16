@@ -142,11 +142,15 @@ public class AuctionHouse implements Notifiable{
 		} 
 		} catch (SienaException ex) {
     		System.err.println("Siena error in AuctionHouse:" + ex.toString());
-    }
+		}
 	}
 	
 	public static void confirmSale(Notification e){
-		balance = e.getAttribute("balance").intValue();
+		if(e.getAttribute("balance") != null){
+			balance = e.getAttribute("balance").intValue();
+			System.out.println("Balance changed to " + balance);
+		}
+		
 	}
 	
 	public static void publishAuction(ThinClient siena){
