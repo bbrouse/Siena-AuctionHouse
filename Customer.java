@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Customer implements Notifiable {
 
-	private String myID = "SomeSpecificID";
+	private String myID = "Customer";
 	Scanner in = new Scanner(System.in);
 	static ThinClient mySiena;
 
