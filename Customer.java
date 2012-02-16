@@ -13,16 +13,23 @@ public class Customer implements Notifiable {
 			if(e.getAttribute("Item") != null)
 			{
 				System.out.println("Would you like to bid for the " + e.getAttribute.name + "? (Y/N)");
-				if(
+				String choice = in.nextLine();
+				if(choice.equalsIgnoreCase("y"))
+				{
+					System.out.println("Please enter a numerical bid.");
+					Integer bid = Integer.parseInt(in.nextLine());
+					System.out.println("Placing bid of " + bid + " on item " + e.getAttribute.name + ".");
+					publish(e.getAttribute, bid);
+				}
 			}
 		}
     };
 
-    public void notify(Notification [] s) { 
+    /*public void notify(Notification [] s) { 
     	System.out.println(myID + " just got a bunch of events:");
     	for (int i=0; i<s.length; i++)
     		System.out.println(s[i].toString());
-    }
+    }*/
 	
 	public static void publish(AuctionItem item, Integer bid){
 		try {
