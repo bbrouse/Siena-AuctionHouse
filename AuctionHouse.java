@@ -186,13 +186,16 @@ public class AuctionHouse implements Notifiable{
 			siena = new ThinClient(address);
 
 		    Filter f = new Filter();
+			Filter g = new Filter();
 		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation");
-		    f.addConstraint("CU_Event", "Bid");
+		    g.addConstraint("CU_Event", Op.EQ, "Bid");
 		    AuctionHouse party = new AuctionHouse();
+			AuctionHouse party2 = new AuctionHouse();
 		    
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
 		    try {
 		    	siena.subscribe(f, party);
+				siena.subscribe(g, party2);
 		    	try {
 		    		for (int i=0; i<1; i++) {
 		    		    Notification e = new Notification();
@@ -209,19 +212,19 @@ public class AuctionHouse implements Notifiable{
 		    	    	}
 		    	    	Thread.sleep(1000);
 		    	    }	
-		    		Thread.sleep(6000);
+					publishAuction(siena);
+		    		Thread.sleep(120000);
 		    	} catch (java.lang.InterruptedException ex) {
 		    		System.out.println("AuctionHouse interrupted"); 
 		    	}
 		    	
 		    	System.out.println("AuctionHouse unsubscribing");
 		    	siena.unsubscribe(f, party);
+				siena.unsubscribe(g, party2);
 		    	
 		    } catch (SienaException ex) {
 		    		System.err.println("Siena error in AuctionHouse:" + ex.toString());
 		    }
-		    	
-				publishAuction(siena);
 				
 		    	System.out.println("AuctionHouse shutting down.");
 		    	siena.shutdown();
