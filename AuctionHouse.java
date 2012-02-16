@@ -171,24 +171,6 @@ public class AuctionHouse implements Notifiable{
 			ex.printStackTrace();
 			System.exit(1);
 		}
-	
-		Filter f = new Filter();
-		f.addConstraint("CU_Event", "Bid");
-		AuctionHouse party = new AuctionHouse();
-		
-		System.out.println("subscribing for " + f.toString());
-	    try {
-		siena.subscribe(f, party);
-			try {
-				Thread.sleep(60000);	// sleeps for 1 minute
-			} catch (java.lang.InterruptedException ex) {
-				System.out.println("interrupted"); 
-			}
-			System.out.println("unsubscribing");
-			siena.unsubscribe(f, party);
-	    } catch (SienaException ex) {
-		System.err.println("Siena error:" + ex.toString());
-	    }
 	}
 	
     public static void main(String args[]) {		
@@ -205,7 +187,7 @@ public class AuctionHouse implements Notifiable{
 
 		    Filter f = new Filter();
 		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation");
-		    //------ADD ALL CUSTOMER INCOMING EVENTS HERE----
+		    f.addConstraint("CU_Event", "Bid");
 		    AuctionHouse party = new AuctionHouse();
 		    
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
