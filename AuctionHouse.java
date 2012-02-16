@@ -33,12 +33,12 @@ public class AuctionHouse implements Notifiable{
 	public void notify(Notification e) {
         System.out.println(myID + " just got this event:");
         System.out.println(e.toString() + "\n");
-        if(e.getAttribute("SI_Event") != null){
+         if(e.getAttribute("SI_Event") != null){
         	if(e.getAttribute("SI_Event").stringValue().equals("Sale_confirmation")){
             	confirmSale(e);
             }
         }
-        else if(e.getAttribute("CU_Event") != null)
+        else if(e.getAttribute("CU_Event") != null){
         	//add incoming customer events here
         }
     };
@@ -52,7 +52,7 @@ public class AuctionHouse implements Notifiable{
                 	confirmSale(s[i]);
                 }
             }
-            else if(s[i].getAttribute("CU_Event") != null)
+            else if(s[i].getAttribute("CU_Event") != null){
             	//add incoming customer events here
             }
         }
@@ -146,9 +146,45 @@ public class AuctionHouse implements Notifiable{
 	}
 	
 	public static void confirmSale(Notification e){
-		if(e.getAttribute("balance") != null)
-			balance = e.getAttribute("balance").intValue();
-		System.out.println("Balance Deducted: balance is now " + balance);
+		balance = e.getAttribute("balance").intValue();
+	}
+	
+	public static void publishAuction(ThinClient siena){
+		try {					
+			Notification e = new Notification();
+			e.putAttribute("AH_Event", "new_auction");
+			e.putAttribute("Item", "Sword");
+			e.putAttribute("price", 500);
+			e.putAttribute("description", "It's a sword.");
+			System.out.println("publishing " + e.toString());
+			try {
+				siena.publish(e);
+			} catch (SienaException ex) {
+				System.err.println("Siena error:" + ex.toString());
+			}
+			//Thread.sleep(1000);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.exit(1);
+		}
+	
+		Filter f = new Filter();
+		f.addConstraint("CU_Event", "Bid");
+		AuctionHouse party = new AuctionHouse();
+		
+		System.out.println("subscribing for " + f.toString());
+	    try {
+		siena.subscribe(f, party);
+			try {
+				Thread.sleep(60000);	// sleeps for 1 minute
+			} catch (java.lang.InterruptedException ex) {
+				System.out.println("interrupted"); 
+			}
+			System.out.println("unsubscribing");
+			siena.unsubscribe(f, party);
+	    } catch (SienaException ex) {
+		System.err.println("Siena error:" + ex.toString());
+	    }
 	}
 	
     public static void main(String args[]) {		
@@ -164,15 +200,15 @@ public class AuctionHouse implements Notifiable{
 			siena = new ThinClient(address);
 
 		    Filter f = new Filter();
-		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation"); 
+		    f.addConstraint("SI_Event", Op.EQ, "Sale_confirmation");
 		    //------ADD ALL CUSTOMER INCOMING EVENTS HERE----
 		    AuctionHouse party = new AuctionHouse();
 		    
 		    System.out.println("AuctionHouse Subscribing: " + f.toString());
 		    try {
 		    	siena.subscribe(f, party);
-		    	try { //TESTING CODE: the for loop below is for testing calls to supplier.  Should receive a confirmation back
-		    		for (int i=0; i<2; i++) {
+		    	try {
+		    		for (int i=0; i<1; i++) {
 		    		    Notification e = new Notification();
 		    		    e.putAttribute("AH_Event", "Restock");
 		    	    	e.putAttribute("item", "CHAIR");
@@ -185,9 +221,9 @@ public class AuctionHouse implements Notifiable{
 		    	    	} catch (SienaException ex) {
 		    				System.err.println("Siena error:" + ex.toString());
 		    	    	}
-		    	    	Thread.sleep(8000);
+		    	    	Thread.sleep(1000);
 		    	    }	
-		    		Thread.sleep(86400000);	// sleeps for 24 hours
+		    		//Thread.sleep(86400000);	// sleeps for 24 hours
 		    	} catch (java.lang.InterruptedException ex) {
 		    		System.out.println("AuctionHouse interrupted"); 
 		    	}
@@ -199,6 +235,8 @@ public class AuctionHouse implements Notifiable{
 		    		System.err.println("Siena error in AuctionHouse:" + ex.toString());
 		    }
 		    	
+				publishAuction(siena);
+				
 		    	System.out.println("AuctionHouse shutting down.");
 		    	siena.shutdown();
 		    	System.exit(0);
