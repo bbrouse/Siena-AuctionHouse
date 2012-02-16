@@ -35,7 +35,7 @@ public class Supplier implements Notifiable{
 		Notification out = new Notification();
 		out.putAttribute("SI_Event", "Sale_confirmation");
 		out.putAttribute("item", item);
-		out.putAttribute("number", item);
+		out.putAttribute("number", num);
 		out.putAttribute("new_balance", balance);
 	    System.out.println("publishing supplier sale" + out.toString());
 		siena.publish(out);
